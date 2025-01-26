@@ -1,0 +1,8 @@
+transformers
+peft
+sentence-transformers
+faiss-cpu
+pandas
+fastapi
+uvicorn
+torch
