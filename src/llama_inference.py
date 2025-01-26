@@ -16,18 +16,23 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 # Define your input prompt
+# path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Ext/judgement/1953_L_1.txt"
+# text = open(path, "r").read()
+# input_text = "Summarize the following legal text: " + 
+
+# path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Abs/test-data/judgement/232.txt"
 path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Ext/judgement/1953_L_1.txt"
-text = open(path, "r").read()
-input_text = "Summarize the following legal text: " + text
+text = open(path, "r", encoding="utf-8").read()
+input_text = f"### Instruction: Summarize the following legal text.\n\n### Input:\n{text.strip()[:10000]}\n\n### Response:\n".strip()
 
 # input_text = "What is life?"
-
+# breakpoint()
 
 # Tokenize the input text with truncation explicitly set to True and move to the same device
-inputs = tokenizer(input_text, max_length=2048, truncation=True, return_tensors="pt").to(model.device)
+inputs = tokenizer(input_text, max_length=4096, truncation=True, return_tensors="pt").to(model.device)
 
 # Perform inference (generate text from the input)
-generated_output = model.generate(inputs["input_ids"], max_new_tokens=200)
+generated_output = model.generate(inputs["input_ids"], max_new_tokens=1000, eos_token_id=tokenizer.eos_token_id)
 
 # Decode and print the generated output
 # generated_text = tokenizer.decode(generated_output[0], skip_special_tokens=True)

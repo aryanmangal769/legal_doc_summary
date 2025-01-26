@@ -34,6 +34,9 @@ python src/data_preprocessing.py
 pip install datasets
 pip install trl
 pip install bitsandbytes
+pip install faiss-cpu
+
+
 
 
 
@@ -47,6 +50,7 @@ https://huggingface.co/docs/trl/en/sft_trainer  Very good documentation on SFT t
 
 Normal 7b model does not work . We needed to qualtize it to 4bit to get it working: https://huggingface.co/blog/4bit-transformers-bitsandbytes
 
+https://github.com/aws-samples/fine-tuning-llm-with-domain-knowledge/tree/main
 
 
 
@@ -70,3 +74,29 @@ something like this
     ### Context
 
     ### output 
+
+## Another Important Change
+
+    # path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Ext/judgement/1953_L_1.txt"
+    # text = open(path, "r").read()
+    # input_text = "Summarize the following legal text: " + 
+
+    # path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Abs/test-data/judgement/232.txt"
+
+path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Ext/judgement/1953_L_1.txt"
+text = open(path, "r", encoding="utf-8").read()
+input_text = f"### Instruction: Summarize the following legal text.\n\n### Input:\n{text.strip()[:1000]}\n\n### Response:\n".strip()
+
+Look at how I chnaged the promnts. In the end ther is a responce thing that is there. 
+
+Using this, the model know I have to give the responce. Earlier it was only major focusing on text completion did not have the idea where to start the answer for. and it is importat to write the "Responce" word for the inference setting as well  otherwise model will not recoganise where it has to start the responce. 
+
+
+## Description of this stage: 
+At this stange model is running, rag piepline is working very nicely. 
+Major conceconens and things to look into future ?
+
+    The model runs an a max limit of 4096 token which is small. 
+    Althohg its fine but the model can be transferred to the UK dataset whihc is much bigger than this .
+
+Now I am going to clean the code an update a first good and cleam version becuase thing are working perfectly fine . 
