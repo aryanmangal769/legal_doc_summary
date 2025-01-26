@@ -49,3 +49,24 @@ Normal 7b model does not work . We needed to qualtize it to 4bit to get it worki
 
 
 
+
+
+
+## Major Chnages to be made now : 
+
+THe current code has the dataset contaiting two labels input and labels and it is fed directly to the STF trainer. 
+The documnetation for the STF thrainer says two things: 
+    Either you describe a formating fucntion that formats the datsst into a list of bacths to work for the triane
+    Or describe the column 'dataset_text_field' should be there in the dataset which contines the complete input and outout in a text completion format. 
+
+My curent code does not have any of there things. So I need to chnage it to have a colum text with the whole text to complete. 
+
+The documnetation says that you should not input the tokenised text. the STF trainer will tokenize the text by itself. So will do this chnage
+
+The documentation syes that you should have very clear disticnticion about wher ethe output starts : 
+something like this
+    ### Summarie
+
+    ### Context
+
+    ### output 
