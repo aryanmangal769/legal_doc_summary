@@ -1,0 +1,25 @@
+# Ignore Python virtual environment
+venv/
+.venv/
+env/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore environment variables
+.env
+.env.local
+
+# Ignore system files
+.DS_Store
+
+# Ignore folders
+dataset/
+fine_tuned_lora_model/
