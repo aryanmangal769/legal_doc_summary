@@ -2,12 +2,12 @@ import os
 import json
 from tqdm import tqdm
 
-# Paths
+# Define paths for input and output directories
 judgement_dir = "../dataset/IN-Ext/judgement/"
 full_summary_dir = "../dataset/IN-Ext/summary/full/"
-segment_summary_dir = "../dataset/IN-Ext//summary/segment-wise/"
+segment_summary_dir = "../dataset/IN-Ext/summary/segment-wise/"
 output_dir = "../dataset/processed-IN-Ext/"
-os.makedirs(output_dir, exist_ok=True)
+os.makedirs(output_dir, exist_ok=True)  # Create output directory if it doesn't exist
 
 def load_full_summaries(judgement_dir, full_summary_dir, author):
     """
@@ -58,7 +58,7 @@ print("Loading segment-wise summaries...")
 segment_summaries_A1 = load_segment_summaries(segment_summary_dir, "A1")
 segment_summaries_A2 = load_segment_summaries(segment_summary_dir, "A2")
 
-# Combine and save the datasets
+# Save the datasets
 print("Saving datasets...")
 
 # Save full summaries

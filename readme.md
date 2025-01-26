@@ -1,102 +1,162 @@
-conda create --name legal_assitant python=3.10
-conda activate legal_assitant
+# Legal Document Summarization with Fine-Tuned LLM and RAG Pipeline
+
+This project focuses on two main objectives:
+1. **Fine-tuning a Large Language Model (LLM)** for summarizing legal documents.
+2. **Implementing a Retrieval-Augmented Generation (RAG) pipeline** to automatically retrieve and summarize legal documents based on user-provided details.
+
+The project leverages the **Llama-2-7b** model, fine-tuned using **LoRA (Low-Rank Adaptation)**, and integrates a RAG pipeline for efficient document retrieval and summarization.
+
+---
+
+## Table of Contents
+1. [Project Overview](#project-overview)
+2. [Setup Instructions](#setup-instructions)
+3. [Dataset Preparation](#dataset-preparation)
+4. [Fine-Tuning the LLM](#fine-tuning-the-llm)
+5. [RAG Pipeline](#rag-pipeline)
+6. [Running the Project](#running-the-project)
+7. [Future Work](#future-work)
+8. [References](#references)
+
+---
+
+## Project Overview
+
+### 1. Fine-Tuning LLM for Legal Summarization
+- The project fine-tunes the **Llama-2-7b** model using **LoRA** to adapt it for summarizing legal documents.
+- The model is trained on a dataset of legal judgments and their corresponding summaries.
+- The training process uses the **SFTTrainer** from the `trl` library, which simplifies fine-tuning with LoRA.
+
+### 2. RAG Pipeline for Document Retrieval
+- The RAG pipeline retrieves relevant legal documents based on user queries (e.g., case names or details).
+- It uses **FAISS** for efficient similarity search and **TF-IDF** for document vectorization.
+- The retrieved documents are then summarized using the fine-tuned LLM.
+
+---
+
+## Setup Instructions
+
+### 1. Create a Conda Environment
+```bash
+conda create --name legal_assistant python=3.10
+conda activate legal_assistant
+```
+
+### 2. Install Required Packages
+```bash
 pip install -r requirements.txt
+```
 
-Download Llama 2 from thsi website
-https://www.llama.com/llama-downloads/
-
-pip install llama-stack
-lama download --source meta --model-id Llama-2-7b  (YOu wull need to give the custom email generated from their website)'
-
-
-Fill the form here : 
-https://huggingface.co/meta-llama/Llama-2-7b-hf
-
-THen you will get acces in your hugging face.
-huggingface-cli login  # Ensure you're logged in with an authorized account
-
-from transformers import LlamaForCausalLM, LlamaTokenizer
-model_name = "meta-llama/Llama-2-7b"
-model = LlamaForCausalLM.from_pretrained(model_name, use_auth_token=True)
-
-pip install sentencepiece
-
-#tried some datasets to download that have a predecided folder structure but this looks the best to download as of now.
-https://zenodo.org/records/7152317#.ZCSfaoTMI2y
-
-Download the dataset.zip from here. 
-
-Afger downoad the data in legal-llm-project/datasets
-
-Do the preprocsiing: 
-python src/data_preprocessing.py 
-
-pip install datasets
-pip install trl
-pip install bitsandbytes
-pip install faiss-cpu
+### 3. Congifurtions for using huggingfac llama model  Llama-2-7b Model
+1. Visit the [Llama 2 hugging-face page](https://huggingface.co/meta-llama/Llama-2-7b-hf/) and request access to the model.
+2. Once approved, log in to Hugging Face:
+   ```bash
+   huggingface-cli login
+   ```
 
 
+### 4. Install Additional Dependencies
+```bash
+pip install sentencepiece datasets trl bitsandbytes faiss-cpu
+```
 
+---
 
+## Dataset Preparation
 
+### 1. Download the Dataset
+- Download the dataset from [Zenodo](https://zenodo.org/records/7152317#.ZCSfaoTMI2y).
+- Extract the dataset into the `legal-llm-project/datasets` directory.
 
-Referneces: 
-https://rocm.blogs.amd.com/artificial-intelligence/llama2-lora/README.html#
-https://discuss.huggingface.co/t/llama-7b-gpu-memory-requirement/34323/8
+### 2. Preprocess the Dataset
+Run the preprocessing script to prepare the dataset for training:
+```bash
+python src/data_preprocessing.py
+```
 
+---
 
-https://huggingface.co/docs/trl/en/sft_trainer  Very good documentation on SFT trainer.
+## Fine-Tuning the LLM
 
-Normal 7b model does not work . We needed to qualtize it to 4bit to get it working: https://huggingface.co/blog/4bit-transformers-bitsandbytes
+### 1. Configure LoRA
+- LoRA is used to fine-tune the Llama-2-7b model with a low-rank adaptation approach.
+- The configuration includes parameters like `lora_alpha`, `lora_dropout`, and `r` (rank).
 
-https://github.com/aws-samples/fine-tuning-llm-with-domain-knowledge/tree/main
+### 2. Training with SFTTrainer
+- The `SFTTrainer` from the `trl` library is used for fine-tuning.
+- The dataset is formatted with clear distinctions between instructions, input, and response:
+  ```text
+  ### Instruction: Summarize the following legal text.
 
+  ### Input:
+  {legal_text}
 
+  ### Response:
+  {summary}
+  ```
 
+### 3. Save the Fine-Tuned Model
+After training, the fine-tuned model is saved for inference:
+```bash
+model.save_pretrained("../fine_tuned_lora_model")
+tokenizer.save_pretrained("../fine_tuned_lora_model")
+```
 
+---
 
-## Major Chnages to be made now : 
+## RAG Pipeline
 
-THe current code has the dataset contaiting two labels input and labels and it is fed directly to the STF trainer. 
-The documnetation for the STF thrainer says two things: 
-    Either you describe a formating fucntion that formats the datsst into a list of bacths to work for the triane
-    Or describe the column 'dataset_text_field' should be there in the dataset which contines the complete input and outout in a text completion format. 
+### 1. Document Retrieval
+- The pipeline uses **FAISS** for efficient similarity search.
+- Documents are vectorized using **TF-IDF** for retrieval.
 
-My curent code does not have any of there things. So I need to chnage it to have a colum text with the whole text to complete. 
+### 2. Summarization
+- Retrieved documents are summarized using the fine-tuned LLM.
+- The prompt format ensures the model knows where to start the response:
+  ```text
+  ### Instruction: Summarize the following legal text.
 
-The documnetation says that you should not input the tokenised text. the STF trainer will tokenize the text by itself. So will do this chnage
+  ### Input:
+  {retrieved_document}
 
-The documentation syes that you should have very clear disticnticion about wher ethe output starts : 
-something like this
-    ### Summarie
+  ### Response:
+  {generated_summary}
+  ```
 
-    ### Context
+---
 
-    ### output 
+## Running the Project
 
-## Another Important Change
+### 1. Fine-Tuning
+Run the fine-tuning script:
+```bash
+python src/fine_tune.py
+```
 
-    # path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Ext/judgement/1953_L_1.txt"
-    # text = open(path, "r").read()
-    # input_text = "Summarize the following legal text: " + 
+### 2. Inference with RAG
+Run the RAG pipeline for document retrieval and summarization:
+```bash
+python src/rag_pipeline.py
+```
 
-    # path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Abs/test-data/judgement/232.txt"
+---
 
-path = "/data/aryan/extras/LLM_project/legal-llm-project/dataset/IN-Ext/judgement/1953_L_1.txt"
-text = open(path, "r", encoding="utf-8").read()
-input_text = f"### Instruction: Summarize the following legal text.\n\n### Input:\n{text.strip()[:1000]}\n\n### Response:\n".strip()
+## Future Work
 
-Look at how I chnaged the promnts. In the end ther is a responce thing that is there. 
+1. **Increase Token Limit**: The current model supports up to 4096 tokens. Future work can explore extending this limit for longer documents.
+2. **Expand to UK Dataset**: Adapt the model for summarizing UK legal documents, which are typically larger and more complex.
+3. **Optimize Retrieval**: Improve the RAG pipeline for faster and more accurate document retrieval.
 
-Using this, the model know I have to give the responce. Earlier it was only major focusing on text completion did not have the idea where to start the answer for. and it is importat to write the "Responce" word for the inference setting as well  otherwise model will not recoganise where it has to start the responce. 
+---
 
+## References
 
-## Description of this stage: 
-At this stange model is running, rag piepline is working very nicely. 
-Major conceconens and things to look into future ?
+1. [Llama 2 Documentation](https://huggingface.co/docs/transformers/model_doc/llama2)
+2. [LoRA Fine-Tuning with AMD ROCm](https://rocm.blogs.amd.com/artificial-intelligence/llama2-lora/README.html)
+3. [SFTTrainer Documentation](https://huggingface.co/docs/trl/en/sft_trainer)
+4. [4-bit Quantization with Bitsandbytes](https://huggingface.co/blog/4bit-transformers-bitsandbytes)
+5. [Fine-Tuning LLMs with Domain Knowledge](https://github.com/aws-samples/fine-tuning-llm-with-domain-knowledge)
 
-    The model runs an a max limit of 4096 token which is small. 
-    Althohg its fine but the model can be transferred to the UK dataset whihc is much bigger than this .
+---
 
-Now I am going to clean the code an update a first good and cleam version becuase thing are working perfectly fine . 
+This project provides a robust framework for fine-tuning LLMs for legal document summarization and integrating them into a RAG pipeline for efficient retrieval and generation.
